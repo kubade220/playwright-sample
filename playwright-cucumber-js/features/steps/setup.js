@@ -1,5 +1,8 @@
-const { setWorldConstructor, World, Before, After} = require("@cucumber/cucumber");
+const { setWorldConstructor, World, Before, After, setDefaultTimeout} = require("@cucumber/cucumber");
 const { chromium } = require('playwright')
+const cp = require('child_process');
+const playwrightClientVersion = cp.execSync('npx playwright --version').toString().trim().split(' ')[1];
+setDefaultTimeout(120 * 1000)
 
 class CustomWorld extends World{
   async setTestStatus(status, remark) {
@@ -23,6 +26,7 @@ Before(async (scenario) => {
       'tunnel': false, // Add tunnel configuration if testing locally hosted webpage
       'tunnelName': '', // Optional
       'geoLocation': '', // country code can be fetched from https://www.lambdatest.com/capabilities-generator/
+      'playwrightClientVersion': playwrightClientVersion
     }
   }
 

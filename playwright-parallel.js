@@ -1,5 +1,7 @@
 const { chromium } = require('playwright')
 const { expect } = require('@playwright/test')
+const cp = require('child_process');
+const playwrightClientVersion = cp.execSync('npx playwright --version').toString().trim().split(' ')[1];
 
 const parallelTests = async (capability) => {
   console.log('Initialising test:: ', capability['LT:Options']['name'])
@@ -12,10 +14,12 @@ const parallelTests = async (capability) => {
 
   await page.goto('https://www.bing.com')
 
-  const element = await page.$('[aria-label="Enter your search term"]')
+  const element = await page.$('[id="sb_form_q"]')
   await element.click()
   await element.type('LambdaTest')
-  await element.press('Enter')
+  await page.waitForTimeout(1000)
+  await page.keyboard.press('Enter')
+  await page.waitForSelector('[class=" b_active"]')
   const title = await page.title()
 
   try {
@@ -42,21 +46,23 @@ const capabilities = [
       'accessKey': process.env.LT_ACCESS_KEY,
       'network': true,
       'video': true,
-      'console': true
+      'console': true,
+      'playwrightClientVersion': playwrightClientVersion
     }
   },
   {
     'browserName': 'MicrosoftEdge',
     'browserVersion': 'latest',
     'LT:Options': {
-      'platform': 'Windows 8',
+      'platform': 'MacOS Ventura',
       'build': 'Playwright Sample Build',
       'name': 'Playwright Sample Test on Windows 8 - MicrosoftEdge',
       'user': process.env.LT_USERNAME,
       'accessKey': process.env.LT_ACCESS_KEY,
       'network': true,
       'video': true,
-      'console': true
+      'console': true,
+      'playwrightClientVersion': playwrightClientVersion
     }
   },
   {
@@ -70,7 +76,8 @@ const capabilities = [
       'accessKey': process.env.LT_ACCESS_KEY,
       'network': true,
       'video': true,
-      'console': true
+      'console': true,
+      'playwrightClientVersion': playwrightClientVersion
     }
   }]
 

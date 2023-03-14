@@ -27,7 +27,6 @@ capabilities = {
 def run(playwright):
     playwrightVersion = str(subprocess.getoutput('playwright --version')).strip().split(" ")[1]
     capabilities['LT:Options']['playwrightClientVersion'] = playwrightVersion
-
     lt_cdp_url = 'wss://cdp.lambdatest.com/playwright?capabilities=' + urllib.parse.quote(
         json.dumps(capabilities))
     browser = playwright.chromium.connect(lt_cdp_url)
@@ -37,8 +36,8 @@ def run(playwright):
         page.fill('[id="sb_form_q"]', 'LambdaTest')
         page.wait_for_timeout(1000)
         page.keyboard.press("Enter")
-        page.wait_for_selector('[class=" b_active"]')
         page.wait_for_timeout(1000)
+        page.wait_for_selector('[class=" b_active"]')
 
         title = page.title()
 
@@ -48,11 +47,19 @@ def run(playwright):
             set_test_status(page, "passed", "Title matched")
         else:
             set_test_status(page, "failed", "Title did not match")
+
+        # get test details at runtime using lambdatest hook
+        test_details = get_test_details(page=page)
+        print("Test Details response - ", json.loads(test_details))
     except Exception as err:
         print("Error:: ", err)
         set_test_status(page, "failed", str(err))
 
     browser.close()
+
+def get_test_details(page):
+    return page.evaluate("_ => {}", "lambdatest_action: {\"action\": \"getTestDetails\"}")
+    
 
 
 def set_test_status(page, status, remark):

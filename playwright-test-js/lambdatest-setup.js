@@ -1,6 +1,12 @@
+/**
+ * Add the file in your test suite to run tests on LambdaTest.
+ * Import `test` object from this file in the tests.
+ */
 const base = require('@playwright/test')
 const path = require('path')
 const { chromium } = require('playwright')
+const cp = require('child_process');
+const playwrightClientVersion = cp.execSync('npx playwright --version').toString().trim().split(' ')[1];
 
 // LambdaTest capabilities
 const capabilities = {
@@ -18,6 +24,7 @@ const capabilities = {
     'tunnel': false, // Add tunnel configuration if testing locally hosted webpage
     'tunnelName': '', // Optional
     'geoLocation': '', // country code can be fetched from https://www.lambdatest.com/capabilities-generator/
+    'playwrightClientVersion': playwrightClientVersion
   }
 }
 
@@ -30,8 +37,6 @@ const modifyCapabilities = (configName, testName) => {
   capabilities['LT:Options']['platform'] = platform ? platform : capabilities['LT:Options']['platform']
   capabilities['LT:Options']['name'] = testName
 }
-
-const getErrorMessage = (obj, keys) => keys.reduce((obj, key) => (typeof obj == 'object' ? obj[key] : undefined), obj)
 
 exports.test = base.test.extend({
   page: async ({ page, playwright }, use, testInfo) => {
@@ -51,7 +56,7 @@ exports.test = base.test.extend({
         action: 'setTestStatus',
         arguments: {
           status: testInfo.status,
-          remark: getErrorMessage(testInfo, ['error', 'message'])
+          remark: testInfo.error?.stack || testInfo.error?.message,
         }
       }
       await ltPage.evaluate(() => {},

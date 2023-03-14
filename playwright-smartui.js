@@ -1,7 +1,5 @@
 const { chromium } = require('playwright')
 const { expect } = require('@playwright/test');
-const cp = require('child_process');
-const playwrightClientVersion = cp.execSync('npx playwright --version').toString().trim().split(' ')[1];
 
 (async () => {
   const capabilities = {
@@ -9,17 +7,14 @@ const playwrightClientVersion = cp.execSync('npx playwright --version').toString
     'browserVersion': 'latest',
     'LT:Options': {
       'platform': 'Windows 10',
-      'build': 'Playwright Sample Build',
-      'name': 'Playwright Sample Test',
+      'build': 'Playwright SmartUI Build',
+      'name': 'Playwright SmartUI Test',
       'user': process.env.LT_USERNAME,
       'accessKey': process.env.LT_ACCESS_KEY,
       'network': true,
       'video': true,
       'console': true,
-      'tunnel': false, // Add tunnel configuration if testing locally hosted webpage
-      'tunnelName': '', // Optional
-      'geoLocation': '', // country code can be fetched from https://www.lambdatest.com/capabilities-generator/
-      'playwrightClientVersion': playwrightClientVersion
+      'smartUIProjectName': '<projectName>' //Add the required Smart UI Project name
     }
   }
 
@@ -30,6 +25,11 @@ const playwrightClientVersion = cp.execSync('npx playwright --version').toString
   const page = await browser.newPage()
 
   await page.goto('https://www.bing.com')
+
+  // Add the following command in order to take screenshot in SmartUI
+  await page.evaluate((_) => {},
+    `lambdatest_action: ${JSON.stringify({ action: 'smartui.takeScreenshot', arguments: { fullPage: true, screenshotName: '<Your Screenshot Name>' }
+    })}`) // Add a relevant screenshot name here
 
   const element = await page.$('[id="sb_form_q"]')
   await element.click()

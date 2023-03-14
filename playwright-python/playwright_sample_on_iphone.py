@@ -26,7 +26,7 @@ capabilities = {
 
 def run(playwright):
     playwrightVersion = str(subprocess.getoutput('playwright --version')).strip().split(" ")[1]
-    capabilities['LT:Options']['playwrightVersion'] = playwrightVersion
+    capabilities['LT:Options']['playwrightClientVersion'] = playwrightVersion
 
     lt_cdp_url = 'wss://cdp.lambdatest.com/playwright?capabilities=' + urllib.parse.quote(
         json.dumps(capabilities))
@@ -37,14 +37,17 @@ def run(playwright):
 
     try:
         page.goto("https://www.bing.com/")
-        page.fill("[aria-label='Enter your search term']", 'LambdaTest')
+        page.fill('[id="sb_form_q"]', 'LambdaTest')
+        page.wait_for_timeout(1000)
         page.keyboard.press("Enter")
+        page.wait_for_selector('[class=" b_active"]')
+        page.wait_for_timeout(1000)
 
         title = page.title()
 
         print("Title:: ", title)
 
-        if "Lambdatest" not in title:
+        if "LambdaTest" in title:
             set_test_status(page, "passed", "Title matched")
         else:
             set_test_status(page, "failed", "Title did not match")

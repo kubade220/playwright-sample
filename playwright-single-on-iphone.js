@@ -1,5 +1,7 @@
 const { chromium, devices } = require('playwright')
 const { expect } = require('@playwright/test');
+const cp = require('child_process');
+const playwrightClientVersion = cp.execSync('npx playwright --version').toString().trim().split(' ')[1];
 
 (async () => {
   const capabilities = {
@@ -17,6 +19,7 @@ const { expect } = require('@playwright/test');
       'tunnel': false, // Add tunnel configuration if testing locally hosted webpage
       'tunnelName': '', // Optional
       'geoLocation': '', // country code can be fetched from https://www.lambdatest.com/capabilities-generator/
+      'playwrightClientVersion': playwrightClientVersion
     }
   }
 
@@ -24,15 +27,19 @@ const { expect } = require('@playwright/test');
     wsEndpoint: `wss://cdp.lambdatest.com/playwright?capabilities=${encodeURIComponent(JSON.stringify(capabilities))}`
   })
 
-  const context = await browser.newContext({ ...devices['iPhone 11'] })  // Documentation: https://playwright.dev/docs/emulation#devices
+  // Documentation: https://playwright.dev/docs/emulation#devices
+  // Supported devices: https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/deviceDescriptorsSource.json
+  const context = await browser.newContext({ ...devices['iPhone 11'] })
   const page = await context.newPage()
 
   await page.goto('https://www.bing.com')
 
-  const element = await page.$('[aria-label="Enter your search term"]')
+  const element = await page.$('[id="sb_form_q"]')
   await element.click()
   await element.type('LambdaTest')
-  await element.press('Enter')
+  await page.waitForTimeout(1000)
+  await page.keyboard.press('Enter')
+  await page.waitForSelector('[class=" b_active"]')
   const title = await page.title()
 
   try {
